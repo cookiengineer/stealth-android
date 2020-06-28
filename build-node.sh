@@ -7,6 +7,7 @@ export ANDROID_NDK_HOME="/opt/android-ndk";
 
 HOST_OS="linux";
 HOST_ARCH="x86_64";
+HOST_ROOT="$PWD";
 
 
 
@@ -16,7 +17,7 @@ build_node() {
 
 	if [[ "$arch" == "armeabi-v7a" ]]; then
 		DEST_CPU="arm";
-		TOOLCHAIN_NAME="armv7-linux-androideabi";
+		TOOLCHAIN_NAME="armv7a-linux-androideabi";
 	elif [[ "$arch" == "arm64-v8a" ]]; then
 		DEST_CPU="arm64";
 		TOOLCHAIN_NAME="aarch64-linux-android";
@@ -42,10 +43,16 @@ build_node() {
 		export CC="$TOOLCHAIN_PATH/bin/$TOOLCHAIN_NAME$ANDROID_SDK_VERSION-clang";
 		export CXX="$TOOLCHAIN_PATH/bin/$TOOLCHAIN_NAME$ANDROID_SDK_VERSION-clang++";
 
-		cd "$ROOT/node";
+		cd "$HOST_ROOT/node";
 
 		chmod +x ./configure;
-		./configure --dest-cpu="$DEST_CPU" --dest-os="android" --without-intl --without-snapshot --openssl-no-asm --cross-compiling --shared;
+
+		./configure --dest-cpu="$DEST_CPU" --dest-os="android" --without-intl --openssl-no-asm --cross-compiling --shared;
+
+		if [[ "$?" == "0" ]]; then
+			cd "$HOST_ROOT/node";
+			make;
+		fi;
 
 	fi;
 
