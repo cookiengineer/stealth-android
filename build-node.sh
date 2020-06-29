@@ -68,8 +68,18 @@ build_node() {
 
 		chmod +x ./configure;
 
-		./configure --dest-cpu="$DEST_CPU" --dest-os="android" --with-intl=none --openssl-no-asm --cross-compiling;
-		# --shared causes same undefined reference linking issues;
+		./configure \
+			--dest-cpu="$DEST_CPU"\
+			--dest-os="android" \
+			--without-intl \
+			--without-inspector \
+			--without-node-snapshot \
+			--without-node-code-cache \
+			--without-npm \
+			--without-snapshot \
+			--openssl-no-asm \
+			--cross-compiling \
+			--shared;
 
 		if [[ "$?" == "0" ]]; then
 
@@ -84,8 +94,8 @@ build_node() {
 
 }
 
-build_node "armeabi-v7a";
-# build_node "arm64-v8a";
+# build_node "armeabi-v7a";
+build_node "arm64-v8a";
 # build_node "x86";
 # build_node "x86_64";
 
