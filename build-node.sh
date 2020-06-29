@@ -1,7 +1,17 @@
 #!/bin/bash
 
+
+
+# XXX: API Levels
+# Android 10   -> 29
+# Android  9   -> 28
+# Android  8.1 -> 27
+# Android  8.0 -> 26
+
+
+
 export ANDROID_HOME="/opt/android-sdk";
-export ANDROID_SDK_VERSION="30";
+export ANDROID_SDK_VERSION="28";
 export ANDROID_NDK="/opt/android-ndk";
 export ANDROID_NDK_HOME="/opt/android-ndk";
 
@@ -78,8 +88,7 @@ build_node() {
 			--without-npm \
 			--without-snapshot \
 			--openssl-no-asm \
-			--cross-compiling \
-			--shared;
+			--cross-compiling;
 
 		if [[ "$?" == "0" ]]; then
 
@@ -87,6 +96,31 @@ build_node() {
 
 			export LDFLAGS=-shared;
 			make;
+
+
+			if [[ -f "$HOST_ROOT/node/out/Release/lib.target/libnode.so" ]]; then
+
+				mkdir -p "$HOST_ROOT/libnode/$arch";
+				cp "$HOST_ROOT/node/out/Release/lib.target/libnode.so" "$HOST_ROOT/libnode/$arch/libnode.so";
+
+			fi;
+
+		fi;
+
+		if [[ "$?" == "0" ]]; then
+
+			cd "$HOST_ROOT/node";
+
+			export LDFLAGS=-shared;
+			make;
+
+
+			if [[ -f "$HOST_ROOT/node/out/Release/node" ]]; then
+
+				mkdir -p "$HOST_ROOT/libnode/$arch";
+				cp "$HOST_ROOT/node/out/Release/node" "$HOST_ROOT/libnode/$arch/node";
+
+			fi;
 
 		fi;
 
