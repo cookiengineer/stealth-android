@@ -18,40 +18,66 @@ build_node() {
 	if [[ "$arch" == "armeabi-v7a" ]]; then
 		DEST_CPU="arm";
 		TOOLCHAIN_NAME="armv7a-linux-androideabi";
+		PLATFORM_NAME="arm-linux-androideabi";
+		ARCH="arm";
+		# TODO: Verify that ARCH is arm for v8
 	elif [[ "$arch" == "arm64-v8a" ]]; then
 		DEST_CPU="arm64";
 		TOOLCHAIN_NAME="aarch64-linux-android";
+		PLATFORM_NAME="aarch64-linux-androideabi";
 		ARCH="arm64";
 	elif [[ "$arch" == "x86" ]]; then
 		DEST_CPU="ia32";
 		TOOLCHAIN_NAME="i686-linux-android";
+		PLATFORM_NAME="i686-linux-android";
+		ARCH="ia32";
 	elif [[ "$arch" == "x86_64" ]]; then
 		DEST_CPU="x64";
 		TOOLCHAIN_NAME="x86_64-linux-android";
+		PLATFORM_NAME="x86_64-linux-android";
 		ARCH="x64";
 	fi;
 
 	if [[ "$DEST_CPU" != "" ]]; then
 
-		export CC_host=$(which gcc);
-		export CXX_host=$(which g++);
-
 		export GYP_DEFINES="target_arch=$ARCH v8_target_arch=$ARCH android_target_arch=$ARCH host_os=$HOST_OS OS=android";
+
+		export CC_host="$(which clang)";
+		export CXX_host="$(which clang++)";
+		export AR_host="$(which ar)";
+		export AS_host="$(which as)";
+		export LD_host="$(which ld)";
+		export NM_host="$(which nm)";
+		export RANLIB_host="$(which ranlib)";
+		export STRIP_host="$(which strip)";
 
 		TOOLCHAIN_PATH="$ANDROID_NDK/toolchains/llvm/prebuilt/$HOST_OS-$HOST_ARCH";
 		export PATH="$TOOLCHAIN_PATH/bin:$PATH";
-		export CC="$TOOLCHAIN_PATH/bin/$TOOLCHAIN_NAME$ANDROID_SDK_VERSION-clang";
-		export CXX="$TOOLCHAIN_PATH/bin/$TOOLCHAIN_NAME$ANDROID_SDK_VERSION-clang++";
+
+		export CC_target="$TOOLCHAIN_PATH/bin/$TOOLCHAIN_NAME$ANDROID_SDK_VERSION-clang";
+		export CXX_target="$TOOLCHAIN_PATH/bin/$TOOLCHAIN_NAME$ANDROID_SDK_VERSION-clang++";
+		export AR_target="$TOOLCHAIN_PATH/bin/$PLATFORM_NAME-ar";
+		export AS_target="$TOOLCHAIN_PATH/bin/$PLATFORM_NAME-as";
+		export LD_target="$TOOLCHAIN_PATH/bin/$PLATFORM_NAME-ld";
+		export NM_target="$TOOLCHAIN_PATH/bin/$PLATFORM_NAME-nm";
+		export RANLIB_target="$TOOLCHAIN_PATH/bin/$PLATFORM_NAME-ranlib";
+		export STRIP_target="$TOOLCHAIN_PATH/bin/$PLATFORM_NAME-strip";
+
 
 		cd "$HOST_ROOT/node";
 
 		chmod +x ./configure;
 
-		./configure --dest-cpu="$DEST_CPU" --dest-os="android" --without-intl --openssl-no-asm --cross-compiling --shared;
+		./configure --dest-cpu="$DEST_CPU" --dest-os="android" --with-intl=none --openssl-no-asm --cross-compiling;
+		# --shared causes same undefined reference linking issues;
 
 		if [[ "$?" == "0" ]]; then
+
 			cd "$HOST_ROOT/node";
+
+			export LDFLAGS=-shared;
 			make;
+
 		fi;
 
 	fi;
